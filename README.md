@@ -10,18 +10,21 @@ Use the following instructions to deploy this application.
 
 # Requirements
 - [Python 3.13](https://www.python.org/downloads/).
-- The Bash shell. For Linux and macOS, this is included by default. In Windows 10, you can install the [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10) to get a Windows-integrated version of Ubuntu and Bash.
-- [The AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html) v1.17 or newer.
+- [Pip](https://pypi.org/project/pip/).
+- The Bash shell. For Linux and macOS, this is included by default. Maybe it's easier to install VS Code and use it's terminal.
+- [The AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html) v2.24.7 or newer.
 
 # Setup
 Download or clone this repository.
 
-    git clone TBD
-    cd ...
+    git clone git@github.com:renesobral/aws-lambda-guardduty.git
+    cd aws-lambda-guardduty
 
-To create a new bucket for deployment artifacts, run `1-create-bucket.sh`.
+Edit the file `.var-file.sh` changing to your S3 Bucket name and the file name to save all IP Address to be blocked by FortiGate
 
-    ./1-create-bucket.sh
+To create a new bucket for deployment artifacts, run `0-create-bucket.sh`.
+
+    ./0-create-bucket.sh
 
 Example output:
 
@@ -42,9 +45,20 @@ Example output:
     Successfully packaged artifacts and wrote output template to file out.yml.
     Waiting for changeset to be created..
     Waiting for stack create/update to complete
-    Successfully created/updated stack - fgt-guardduty-event-python
+    Successfully created/updated stack - fgt-guardduty-event
 
-This script uses AWS CloudFormation to deploy the Lambda functions and an IAM role. If the AWS CloudFormation stack that contains the resources already exists, the script updates it with any changes to the template or function code.
+This script uses AWS CloudFormation to deploy:
+- The Lambda functions and it's IAM role.
+- The CloudWatch Filter and it's IAM role.
+
+
+If the AWS CloudFormation stack that contains the resources already exists, the script updates it with any changes to the template or function code.
 
 # Local Test
+ Edit the file `lambda_function.test.py` on the line 20 to use as an input the event file with your testing payload.
+
+ Then execute the script: 
+```
+./0-create-resources.sh
+```
 
