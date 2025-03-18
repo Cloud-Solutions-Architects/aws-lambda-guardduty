@@ -1,0 +1,5 @@
+S3_BUCKET_NAME="sri-aws-lambda-guardduty"
+S3_BLOCKLIST_KEY_FILE="pbs_ip_block"
+
+export S3_BUCKET=$S3_BUCKET_NAME
+export S3_BLOCKLIST_KEY=$S3_BLOCKLIST_KEY_FILE

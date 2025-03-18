@@ -1,0 +1,122 @@
+[
+    {
+        "AccountId": "960603541212",
+        "Arn": "arn:aws:guardduty:us-east-1:960603541212:detector/5abee25619c905beba834967ee577f2f/finding/d2cad31c32712132f9c2115489c516c6",
+        "CreatedAt": "2025-03-17T22:27:48.578Z",
+        "Description": "The EC2 instance i-013e9c5c61429065d is communicating outbound with a known Bitcoin-related IP address 195.201.8.155.",
+        "Id": "d2cad31c32712132f9c2115489c516c6",
+        "Partition": "aws",
+        "Region": "us-east-1",
+        "Resource": {
+            "InstanceDetails": {
+                "AvailabilityZone": "us-east-1a",
+                "ImageDescription": "Amazon Linux 2023 AMI 2023.6.20250303.0 x86_64 HVM kernel-6.1",
+                "ImageId": "ami-08b5b3a93ed654d19",
+                "InstanceId": "i-013e9c5c61429065d",
+                "InstanceState": "running",
+                "InstanceType": "t2.large",
+                "OutpostArn": null,
+                "LaunchTime": "2025-03-17T22:13:09.000Z",
+                "NetworkInterfaces": [
+                    {
+                        "Ipv6Addresses": [],
+                        "NetworkInterfaceId": "eni-0287fc58743d9b0ba",
+                        "PrivateIpAddress": "10.129.0.119",
+                        "PrivateIpAddresses": [
+                            {
+                                "PrivateDnsName": null,
+                                "PrivateIpAddress": "10.129.0.119"
+                            }
+                        ],
+                        "PublicDnsName": "",
+                        "PublicIp": "3.84.196.116",
+                        "SecurityGroups": [
+                            {
+                                "GroupId": "sg-050b0d3dda46a061b",
+                                "GroupName": "launch-wizard-17"
+                            }
+                        ],
+                        "SubnetId": "subnet-0a5481268a86abfcd",
+                        "VpcId": "vpc-07299484189c894f3"
+                    }
+                ],
+                "Platform": null,
+                "ProductCodes": [],
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "malicious-instance"
+                    }
+                ]
+            },
+            "ResourceType": "Instance"
+        },
+        "SchemaVersion": "2.0",
+        "Service": {
+            "Action": {
+                "ActionType": "NETWORK_CONNECTION",
+                "NetworkConnectionAction": {
+                    "Blocked": false,
+                    "ConnectionDirection": "OUTBOUND",
+                    "LocalPortDetails": {
+                        "Port": 46797,
+                        "PortName": "Unknown"
+                    },
+                    "Protocol": "TCP",
+                    "LocalIpDetails": {
+                        "IpAddressV4": "10.129.0.119"
+                    },
+                    "LocalNetworkInterface": "eni-0287fc58743d9b0ba",
+                    "RemoteIpDetails": {
+                        "City": {
+                            "CityName": "Falkenstein"
+                        },
+                        "Country": {
+                            "CountryName": "Germany"
+                        },
+                        "GeoLocation": {
+                            "Lat": 50.4777,
+                            "Lon": 12.3649
+                        },
+                        "IpAddressV4": "195.201.8.155",
+                        "Organization": {
+                            "Asn": "24940",
+                            "AsnOrg": "Hetzner Online GmbH",
+                            "Isp": "Hetzner Online",
+                            "Org": "Hetzner Online"
+                        }
+                    },
+                    "RemotePortDetails": {
+                        "Port": 3333,
+                        "PortName": "Cryptomining-Related"
+                    }
+                }
+            },
+            "Evidence": {
+                "ThreatIntelligenceDetails": [
+                    {
+                        "ThreatListName": "Amazon",
+                        "ThreatNames": [
+                            "suspicious:mining/stratum"
+                        ]
+                    }
+                ]
+            },
+            "Archived": false,
+            "Count": 3,
+            "DetectorId": "5abee25619c905beba834967ee577f2f",
+            "EventFirstSeen": "2025-03-17T22:26:39.000Z",
+            "EventLastSeen": "2025-03-17T22:50:03.000Z",
+            "ResourceRole": "TARGET",
+            "ServiceName": "guardduty",
+            "AdditionalInfo": {
+                "Value": "{\"threatListName\":\"Amazon\",\"threatName\":\"suspicious:mining/stratum\"}",
+                "Type": "default"
+            }
+        },
+        "Severity": 8,
+        "Title": "The EC2 instance i-013e9c5c61429065d is communicating with a known Bitcoin-related IP address.",
+        "Type": "CryptoCurrency:EC2/BitcoinTool.B",
+        "UpdatedAt": "2025-03-17T22:50:26.901Z"
+    }
+]
