@@ -1,6 +1,6 @@
 S3_BUCKET_NAME="fgtblockiplist"
 S3_BLOCKLIST_KEY_FILE="ip_addresses"
-AWS_REAGION="us-east-1"
+AWS_REGION="us-east-1"
 
 export S3_BUCKET=$S3_BUCKET_NAME
 export S3_BLOCKLIST_KEY=$S3_BLOCKLIST_KEY_FILE

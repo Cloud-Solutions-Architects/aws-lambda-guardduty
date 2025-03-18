@@ -8,13 +8,19 @@ The project source includes function code and supporting resources:
 
 Use the following instructions to deploy this application.
 
-# Requirements
+## Requirements
 - [Python 3.13](https://www.python.org/downloads/).
 - [Pip](https://pypi.org/project/pip/).
 - The Bash shell. For Linux and macOS, this is included by default. Maybe it's easier to install VS Code and use it's terminal.
 - [The AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html) v2.24.7 or newer.
 
-# Resources
+### Python Lib Requirements
+- jsonpickle 4.0.2
+- aws-xray-sdk 2.14.0
+- jmespath 1.0.1
+- boto3
+
+## Resources
 Upon executing the #3 script, a CloudFormation Stack will be created, provisioning the following resources:
  * EventBridge Rule: A rule that acts as a trigger for the Serverless function, filtering only GuardDuty Findings events.
  * IAM Role and Policy: Automatically configured roles and policies required for the Serverless function and the EventBridge Rule.
@@ -22,7 +28,7 @@ Upon executing the #3 script, a CloudFormation Stack will be created, provisioni
 
 In total, eight resources are deployed, including rules, IAM roles, and the Lambda function.
 
-# Automation Setup
+## Setup
 Download or clone this repository.
 
     git clone git@github.com:renesobral/aws-lambda-guardduty.git
@@ -42,7 +48,7 @@ To build a Lambda layer that contains the function's runtime dependencies, run `
 
     ./2-build-layer.sh
 
-# Automation Deploy
+### Automation Deploy
 To deploy the application, run `3-deploy.sh`.
 
     ./3-deploy.sh
@@ -62,7 +68,7 @@ This script uses AWS CloudFormation to deploy:
 
 If the AWS CloudFormation stack that contains the resources already exists, the script updates it with any changes to the template or function code.
 
-# Local Test
+## Local Test
  Edit the file `lambda_function.test.py` on the line 20 to use as an input the event file with your testing payload.
 
  Then execute the script, if you haven't already: 
