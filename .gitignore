@@ -1,6 +1,7 @@
 #Project files
 package/*
 **/.DS_Store
+out.yml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
