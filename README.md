@@ -28,6 +28,27 @@ Upon executing the #3 script, a CloudFormation Stack will be created, provisioni
 
 In total, eight resources are deployed, including rules, IAM roles, and the Lambda function.
 
+### AIM Role and Policy
+The CloudFormation Template (CFT) will create specific IAM roles and policies, explicitly defined in the `template.yml` file. Below are the scope and permissions assigned by the CFT:
+
+#### Lambda Function
+
+The function will have restricted access to a specific S3 bucket and the necessary permissions to execute. These include:
+- AWSLambdaBasicExecutionRole
+- AWSLambda_ReadOnlyAccess
+- AWSXrayWriteOnlyAccess
+- s3:ListAllMyBuckets
+- s3:GetObject
+- s3:PutObject
+
+#### Event Rule
+
+This rule will grant permission to events.amazonaws.com and allow it to invoke only our serverless function. The assigned permissions are:
+- sts:AssumeRole
+- lambda:InvokeFunction
+
+
+
 ## Setup
 Download or clone this repository.
 
