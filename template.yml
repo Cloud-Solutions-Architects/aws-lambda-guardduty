@@ -10,7 +10,54 @@ Parameters:
     Description: File name with all IPs
     Type: String
 Resources:
-  function:
+  RuleEventBridge:
+    Type: AWS::Events::Rule
+    DependsOn:
+      - PolicyFGT
+    Properties:
+      Name: FortiGate-IP-BlockList
+      EventPattern: '{"source":["aws.guardduty"],"detail-type":["GuardDuty Finding"]}'
+      State: ENABLED
+      EventBusName: default
+      Targets:
+        - Id: Iddf6b2077-a255-4355-9ab4-adf65ed8ea41
+          Arn:
+            Fn::GetAtt:
+              - ServerLessFunction
+              - Arn 
+          RoleArn:
+            Fn::GetAtt:
+              - RoleFGT
+              - Arn
+  RoleFGT:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: Amazon_EventBridge_Rule_FortiGate_Block_IP
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+            Action: sts:AssumeRole
+      MaxSessionDuration: 3600
+  PolicyFGT:
+    Type: AWS::IAM::RolePolicy
+    Properties:
+      PolicyName: Amazon_EventBridge_Invoke_Lambda_FortiGate_Block_IP
+      RoleName:
+        Ref: RoleFGT
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - lambda:InvokeFunction
+            Resource:
+              - Fn::GetAtt:
+                  - ServerLessFunction
+                  - Arn 
+  ServerLessFunction:
     Type: AWS::Serverless::Function
     Properties:
       Handler: lambda_function.lambda_handler
@@ -20,8 +67,10 @@ Resources:
       Timeout: 10
       Environment:
         Variables:
-          S3_BUCKET: !Ref BucketName
-          S3_BLOCKLIST_KEY: !Ref BucketFileName
+          S3_BUCKET:
+            Ref: BucketName
+          S3_BLOCKLIST_KEY:
+            Ref: BucketFileName
       Policies:
         - AWSLambdaBasicExecutionRole
         - AWSLambda_ReadOnlyAccess
@@ -34,10 +83,22 @@ Resources:
                 - s3:GetObject
                 - s3:PutObject
               Resource:
-                - '*'
+                - Fn::Sub:
+                  - arn:aws:s3:::${BUCKET}
+                  - BUCKET:
+                      Ref: BucketName
       Tracing: Active
       Layers:
-        - !Ref libs
+        - Ref: libs
+      Events:
+        EventBridgeRule1:
+          Type: EventBridgeRule
+          Properties:
+            Pattern:
+              source:
+                - aws.guardduty
+              detail-type:
+                - GuardDuty Finding
   libs:
     Type: AWS::Serverless::LayerVersion
     Properties:

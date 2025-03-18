@@ -3,7 +3,7 @@
 The project source includes function code and supporting resources:
 
 - `function` - A Python function.
-- `template.yml` - An AWS CloudFormation template that creates an application.
+- `template.yml` - An AWS CloudFormation template that creates and configure this application.
 - `0-create-bucket.sh`, `2-build-layer.sh`, etc. - Shell scripts that use the AWS CLI to deploy and manage the application.
 
 Use the following instructions to deploy this application.
@@ -14,13 +14,21 @@ Use the following instructions to deploy this application.
 - The Bash shell. For Linux and macOS, this is included by default. Maybe it's easier to install VS Code and use it's terminal.
 - [The AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html) v2.24.7 or newer.
 
-# Setup
+# Resources
+Upon executing the #3 script, a CloudFormation Stack will be created, provisioning the following resources:
+ * EventBridge Rule: A rule that acts as a trigger for the Serverless function, filtering only GuardDuty Findings events.
+ * IAM Role and Policy: Automatically configured roles and policies required for the Serverless function and the EventBridge Rule.
+ * Lambda Function (Serverless): The automation script packages and uploads all necessary files to an S3 bucket, then creates a new Lambda function.
+
+In total, eight resources are deployed, including rules, IAM roles, and the Lambda function.
+
+# Automation Setup
 Download or clone this repository.
 
     git clone git@github.com:renesobral/aws-lambda-guardduty.git
     cd aws-lambda-guardduty
 
-Edit the file `.var-file.sh` changing to your S3 Bucket name and the file name to save all IP Address to be blocked by FortiGate
+Edit the file `.var-file.sh` changing to your S3 Bucket name, file name inside the S3 Bucket that will have a list of IP addresss, and the region the serverless function will run.
 
 To create a new bucket for deployment artifacts, run `0-create-bucket.sh`.
 
@@ -34,7 +42,7 @@ To build a Lambda layer that contains the function's runtime dependencies, run `
 
     ./2-build-layer.sh
 
-# Deploy
+# Automation Deploy
 To deploy the application, run `3-deploy.sh`.
 
     ./3-deploy.sh
@@ -57,8 +65,13 @@ If the AWS CloudFormation stack that contains the resources already exists, the 
 # Local Test
  Edit the file `lambda_function.test.py` on the line 20 to use as an input the event file with your testing payload.
 
- Then execute the script: 
+ Then execute the script, if you haven't already: 
 ```
 ./0-create-resources.sh
 ```
+Next, you can execute the file `1-run-tests.sh`
 
+> Make sure you have valid credentials to your AWS environment.
+
+# FortiGate Configuration
+> TDB
