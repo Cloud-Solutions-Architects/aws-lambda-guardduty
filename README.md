@@ -4,7 +4,7 @@ The project source includes function code and supporting resources:
 
 - `function` - A Python function.
 - `template.yml` - An AWS CloudFormation template that creates and configure this application.
-- `0-create-bucket.sh`, `2-build-layer.sh`, etc. - Shell scripts that use the AWS CLI to deploy and manage the application.
+- `0-create-resources.sh`, `2-build-layer.sh`, etc. - Shell scripts that use the AWS CLI to deploy and manage the application.
 
 Use the following instructions to deploy this application.
 
@@ -57,9 +57,9 @@ Download or clone this repository.
 
 Edit the file `.var-file.sh` changing to your S3 Bucket name, file name inside the S3 Bucket that will have a list of IP addresss, and the region the serverless function will run.
 
-To create a new bucket for deployment artifacts, run `0-create-bucket.sh`.
+To create a new bucket for deployment artifacts, run `0-create-resources.sh`.
 
-    ./0-create-bucket.sh
+    ./0-create-resources.sh
 
 Example output:
 
