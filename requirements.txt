@@ -1,0 +1,6 @@
+boto3==1.37.1
+jsonpickle==4.0.2
+aws-xray-sdk==2.14.0
+jmespath==1.0.1
+requests==2.32.3
+load_dotenv==0.1.0
