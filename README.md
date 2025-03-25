@@ -103,4 +103,4 @@ Next, you can execute the file `1-run-tests.sh`
 > Make sure you have valid credentials to your AWS environment.
 
 # FortiGate Configuration
-> TDB
+> [Link](https://docs.fortinet.com/document/fortimanager-public-cloud/7.6.0/aws-administration-guide/486923/sdn-connector-integration-with-aws) for the Official documentation
