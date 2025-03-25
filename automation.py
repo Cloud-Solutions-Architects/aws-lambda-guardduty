@@ -4,18 +4,16 @@ from boto3.s3.transfer import S3Transfer
 from dataclasses import dataclass
 from dotenv import load_dotenv
 
-from subprocess import check_output
 import logging
 import sys
 import os
-import subprocess
 import boto3
 import shutil
 
 import jsonpickle
 
 load_dotenv()
-logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
+logFormatter = logging.Formatter("%(asctime)s [%(threadName)-8.12s] [%(levelname)-4.5s]  %(message)s")
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
@@ -40,6 +38,7 @@ class S3BucketHelper(object):
     
     
     def create_s3_bucket(self):
+        logger.info("Creating S3 bucket.")
         self.s3_resource.create_bucket(
             Bucket=config.s3_bucket_name,
             CreateBucketConfiguration={ 'LocationConstraint': config.aws_region}
@@ -49,18 +48,44 @@ class S3BucketHelper(object):
         transfer = S3Transfer(boto3.client('s3', config.aws_region))
         transfer.upload_file('tmp_file', config.s3_bucket_name, config.s3_file_name)
         os.remove('tmp_file')
+        logger.info("Creating S3 bucket - Done.")
 
+    def delete_s3_bucket(self):
+        logger.info("Deleting S3 bucket.")
+        
+        client = boto3.client('s3', config.aws_region)
+        response = client.list_buckets()
+       
+        s3_bucket_exist = next((x for x in response['Buckets'] if x['Name'] == config.s3_bucket_name), None)
+        if (s3_bucket_exist):
+            
+            response = client.list_objects_v2(Bucket=config.s3_bucket_name, Prefix="")
+            if 'Contents' in response:
+                for object in response['Contents']:
+                    logger.info("Deleting %s" % object['Key'])
+                    client.delete_object(Bucket=config.s3_bucket_name, Key=object['Key'])
+
+            client.delete_bucket(
+                Bucket=config.s3_bucket_name
+            )
+        else:
+            logger.info("Bucket doesn't exist.")
+
+        logger.info("Deleting S3 bucket - Done.")
 
 class PipHelper(object):
 
     package_directory = "package"
-
-    def create_package_folder(self):
+    def delete_package_folder(self):
         if os.path.exists(self.package_directory):
             shutil.rmtree(self.package_directory)
-        
-        command = "pip3 install --target ./package/python -r ./function/requirements.txt"
-        subprocess.run([command],check=True, capture_output=False, shell=True, cwd=os.getcwd())
+
+    def create_package_folder(self):
+        packages_path = "%s/package/python" % os.getcwd()
+        requirement_path = "%s/function/requirements.txt" % os.getcwd()
+        self.delete_package_folder()
+        command = "pip3 install --target %s -r %s" % (packages_path, requirement_path)
+        os.system(command)
 
 
 class CloudFormationHelper(object):
@@ -88,6 +113,18 @@ class CloudFormationHelper(object):
         logger.info("## Commnand: " + full_command)
         os.system(full_command)
         logger.info("Starting stack creation process - Done")
+        
+        if os.path.exists(self.template_out_file):
+            os.remove(self.template_out_file)
+    
+    def delete_stack(self):
+        logger.info("Starting stack deletion process")
+        stack_name = "%s-FortiGate-GuardGuty-Finding-Security" % config.prefix
+
+        command = "aws cloudformation delete-stack --stack-name %s" % stack_name
+        logger.info("## Commnand: " + command)
+        os.system(command)
+        logger.info("Starting stack deletion process - Done")
 
 
 class Main(object):
@@ -106,6 +143,17 @@ class Main(object):
             helper2 = CloudFormationHelper()
             helper2.create_package()
             helper2.create_stack()
+        elif (args.step_id == 2):
+            helper = S3BucketHelper()
+            helper.delete_s3_bucket()
+
+            helper2 = PipHelper()
+            helper2.delete_package_folder()
+
+            helper3 = CloudFormationHelper()
+            helper3.delete_stack()
+
+
         else:
             logger.error("Option not available.")
             pass    
@@ -114,7 +162,7 @@ class Main(object):
 if __name__ == "__main__":
     logger.info("Starting automation script.")
     parser = ArgumentParser(description='Fortinet Cloud Solutions Team - GuardDuty Security Monitor')
-    parser.add_argument('--step', dest="step_id", type=int, required=True, help="Which automation step to execute: 0 - for Create S3 Resource, 2  - For Deploy")
+    parser.add_argument('--step', dest="step_id", type=int, required=True, help="Which automation step to execute: 0 - for Create S3 Resource, 1 - For Deploy, and 2 - For Cleaninig Up all creates resources.")
     args = parser.parse_args()
 
     region = os.environ.get("AWS_REGION")

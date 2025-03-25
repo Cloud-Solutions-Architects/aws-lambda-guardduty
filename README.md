@@ -10,7 +10,7 @@ The project source includes function code and supporting resources:
 
 - `function` - A Python function.
 - `template.yml` - An AWS CloudFormation template that creates and configure this application.
-- `0-create-resources.sh`, `2-build-layer.sh`, etc. - Shell scripts that use the AWS CLI to deploy and manage the application.
+- `automation.py` - Python scripts that use the AWS CLI to deploy and manage this application.
 
 Use the following instructions to deploy this application.
 
@@ -60,50 +60,37 @@ Download or clone this repository.
     git clone git@github.com:Cloud-Solutions-Architects/aws-lambda-guardduty.git
     cd aws-lambda-guardduty
 
-Edit the file `.var-file.sh` changing to your S3 Bucket name, file name inside the S3 Bucket that will have a list of IP addresss, and the region the serverless function will run.
+Edit the file `.env` changing to your S3 Bucket name, file name inside the S3 Bucket that will have a list of IP addresss, and the region the serverless function will run.
 
-To create a new bucket for deployment artifacts, run `0-create-resources.sh`.
+> Make sure you have valid credentials to your AWS environment.
 
-    ./0-create-resources.sh
+To create a new bucket for deployment artifacts, run `python3 automation.py --step 0`.
+
+    python3 automation.py --step 0
 
 Example output:
 
-    make_bucket: lambda-artifacts-a5e491dbb5b22e0d
+    [MainThread] [INFO ]  Starting automation script.
+    [MainThread] [INFO ]  Creating S3 bucket.
+    [MainThread] [INFO ]  Found credentials in environment variables.
+    [MainThread] [INFO ]  Creating S3 bucket - Done.
 
-To build a Lambda layer that contains the function's runtime dependencies, run `2-build-layer.sh`. Packaging dependencies in a layer reduces the size of the deployment package that you upload when you modify your code.
+It means the S3 bucket got created and a new empty file is already there.
 
-    ./2-build-layer.sh
 
 ### Automation Deploy
-To deploy the application, run `3-deploy.sh`.
+To deploy the application, run `python3 automation.py --step 1`.
 
-    ./3-deploy.sh
+    python3 automation.py --step 1
     
-Example output:
-
-    Uploading to e678bc216e6a0d510d661ca9ae2fd941  9519118 / 9519118.0  (100.00%)
-    Successfully packaged artifacts and wrote output template to file out.yml.
-    Waiting for changeset to be created..
-    Waiting for stack create/update to complete
-    Successfully created/updated stack - fgt-guardduty-event
-
-This script uses AWS CloudFormation to deploy:
-- The Lambda functions and it's IAM role.
-- The CloudWatch Filter and it's IAM role.
-
+This script will:
+- Install Lambda function required packages.
+- Upload Lambda functions and libraris to S3 bucket.
+- Create the Lambda functions and it's IAM role.
+- Create the CloudWatch Filter and it's IAM role.
 
 If the AWS CloudFormation stack that contains the resources already exists, the script updates it with any changes to the template or function code.
 
-## Local Test
- Edit the file `lambda_function.test.py` on the line 20 to use as an input the event file with your testing payload.
-
- Then execute the script, if you haven't already: 
-```
-./0-create-resources.sh
-```
-Next, you can execute the file `1-run-tests.sh`
-
-> Make sure you have valid credentials to your AWS environment.
 
 # FortiGate Configuration
 > [Link](https://docs.fortinet.com/document/fortimanager-public-cloud/7.6.0/aws-administration-guide/486923/sdn-connector-integration-with-aws) for the Official documentation
