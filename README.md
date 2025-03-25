@@ -1,4 +1,7 @@
-# FortiGate aws-lambda-guardduty - Parse GuardDuty Event (Python)
+# FortiGate aws-lambda-guardduty - Parse GuardDuty Event
+
+![Overall](./images/Overall.png)
+
 
 The project source includes function code and supporting resources:
 
@@ -10,8 +13,7 @@ Use the following instructions to deploy this application.
 
 ## Requirements
 - [Python 3.13](https://www.python.org/downloads/).
-- [Pip](https://pypi.org/project/pip/).
-- The Bash shell. For Linux and macOS, this is included by default. Maybe it's easier to install VS Code and use it's terminal.
+- The Bash shell. For Linux and macOS, this is included by default. In Windows 10, you can install the [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10) to get a Windows-integrated version of Ubuntu and Bash.
 - [The AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html) v2.24.7 or newer.
 
 ### Python Lib Requirements

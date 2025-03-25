@@ -3,6 +3,8 @@ package/*
 **/.DS_Store
 out.yml
 
+*.bkp
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
