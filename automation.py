@@ -36,11 +36,13 @@ config: EnvironmentData = None
 class S3BucketHelper(object):
 
     def __init__(self):
-        self.s3_resource = boto3.resource("s3", region_name=config.aws_region)
+        self.s3_resource = boto3.resource("s3")
+    
     
     def create_s3_bucket(self):
         self.s3_resource.create_bucket(
-            Bucket=config.s3_bucket_name
+            Bucket=config.s3_bucket_name,
+            CreateBucketConfiguration={ 'LocationConstraint': config.aws_region}
         )
 
         open('tmp_file', 'a').close()
