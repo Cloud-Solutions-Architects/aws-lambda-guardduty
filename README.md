@@ -54,7 +54,7 @@ This rule will grant permission to events.amazonaws.com and allow it to invoke o
 ## Setup
 Download or clone this repository.
 
-    git clone git@github.com:renesobral/aws-lambda-guardduty.git
+    git clone git@github.com:Cloud-Solutions-Architects/aws-lambda-guardduty.git
     cd aws-lambda-guardduty
 
 Edit the file `.var-file.sh` changing to your S3 Bucket name, file name inside the S3 Bucket that will have a list of IP addresss, and the region the serverless function will run.
