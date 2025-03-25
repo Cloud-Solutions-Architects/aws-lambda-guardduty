@@ -33,7 +33,7 @@ Upon executing the #3 script, a CloudFormation Stack will be created, provisioni
 
 In total, eight resources are deployed, including rules, IAM roles, and the Lambda function.
 
-### AIM Role and Policy
+### IAM Role and Policy
 The CloudFormation Template (CFT) will create specific IAM roles and policies, explicitly defined in the `template.yml` file. Below are the scope and permissions assigned by the CFT:
 
 #### Lambda Function
