@@ -3,6 +3,9 @@
 ![Overall](./images/Overall.png)
 
 
+### Process Flows
+![Process Flow](./images/GuardDutyFortiGateIntegration_ProcessFlow.png)
+
 The project source includes function code and supporting resources:
 
 - `function` - A Python function.
