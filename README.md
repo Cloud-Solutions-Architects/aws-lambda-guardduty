@@ -52,7 +52,8 @@ This rule will grant permission to events.amazonaws.com and allow it to invoke o
 - sts:AssumeRole
 - lambda:InvokeFunction
 
-
+### VPC EndPoint
+[VPC EndPoint for S3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/privatelink-interface-endpoints.html#accessing-bucket-and-aps-from-interface-endpoints)
 
 ## Setup
 Download or clone this repository.
