@@ -224,6 +224,9 @@ class Main(object):
             helper2.create_package()
             helper2.create_stack()
         elif (args.step_id == 2):
+            helpEC2 = EC2Helper()
+            helpEC2.create_vpce_s3(args.vpc_id, args.subnet_ids, args.sg_ids)
+        elif (args.step_id == 3):
             helper = S3BucketHelper()
             helper.delete_s3_bucket()
 
@@ -232,9 +235,6 @@ class Main(object):
 
             helper3 = CloudFormationHelper()
             helper3.delete_stack()
-        elif (args.step_id == 3):
-            helpEC2 = EC2Helper()
-            helpEC2.create_vpce_s3(args.vpc_id, args.subnet_ids, args.sg_ids)
         else:
             logger.error("Option not available.")
             pass
@@ -246,7 +246,7 @@ if __name__ == "__main__":
     main_parser = ArgumentParser(
         description='Fortinet Cloud Solutions Team - GuardDuty Security Monitor', usage="python3 automation.py --step <Step ID>")
     main_parser.add_argument('--step', dest="step_id", type=int, required=True,
-                             help="Which automation step to execute: 0 - for Create S3 Resource, 1 - For Deploy, 2 - For Cleaninig Up all creates resources, and 3 - For create the VPC Endpoint for EC2 private access.")
+                             help="Which automation step to execute: 0 - for Create S3 Resource, 1 - For Deploy, 2 - For create the VPC Endpoint for EC2 private access.")
     main_parser.add_argument('--vpcId', dest="vpc_id", type=str,
                              required=False, help="VPC ID for the VPC Endpoint resource.")
     main_parser.add_argument('--subnetId', dest="subnet_ids", type=str, action="append",

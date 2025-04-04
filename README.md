@@ -92,6 +92,15 @@ This script will:
 
 If the AWS CloudFormation stack that contains the resources already exists, the script updates it with any changes to the template or function code.
 
+### VPC EndPoint and S3 Policy Configuration
+
+To create the VPCe, run the command `python3 automation.py --step 2 --vpcId <vpc-id> --subnetId <subnet-id-1> --subnetId <subnet-id-2>  --sgId <sg-id-1> --sgId <sg-id-2>`
+
+Noticed in the case where only one subnet is necessary, just pass the parameter --subnetId a single time, same behavior for --sgId.
+The script will:
+- Create the VPC EndPoint based on the data provider
+- Set the S3 Bucket policy
+- Print the URL that needs to be used on FortiGate for the Address IP Object.
 
 # FortiGate Configuration
 > [Link](https://docs.fortinet.com/document/fortimanager-public-cloud/7.6.0/aws-administration-guide/486923/sdn-connector-integration-with-aws) for the Official documentation
