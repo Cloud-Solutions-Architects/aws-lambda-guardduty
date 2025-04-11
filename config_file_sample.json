@@ -1,0 +1,30 @@
+{
+    "environments": [
+        {
+            "s3_bucket_name": "ip-block-guardduty",
+            "s3_file_name": "ip-block-file",
+            "aws_region": "us-east-1",
+            "prefix": "test-us-east-1",
+            "endpoint": {
+                "vpc_id": "vpc-0b153340261cd3339",
+                "subnet_ids": ["subnet-039a774d02a479e06", "subnet-069d02219f6ce7138"],
+                "security_group_ids": ["sg-091bb3c1364819fb2"]
+            }
+        },
+        {
+            "s3_bucket_name": "ip-block-guardduty",
+            "s3_file_name": "ip-block-file",
+            "aws_region": "us-east-2",
+            "prefix": "test-us-east-2",
+            "endpoint": {
+                "vpc_id": "vpc-02799cf64d7deb7de",
+                "subnet_ids": [
+                    "subnet-088195251e38dea0a",
+                    "subnet-067e10a92cbb6c7e2",
+                    "subnet-0fe81dc96d91639ed"
+                ],
+                "security_group_ids": ["sg-05bc7a2db11ff8fb1"]
+            }
+        }
+    ]
+}

@@ -15,7 +15,7 @@ The project source includes function code and supporting resources:
 Use the following instructions to deploy this application.
 
 ## Requirements
-- [Python 3.13](https://www.python.org/downloads/).
+- [Python 3.13](https://www.python.org/downloads/) or latest .
 - The Bash shell. For Linux and macOS, this is included by default. In Windows 10, you can install the [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10) to get a Windows-integrated version of Ubuntu and Bash.
 - [The AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html) v2.24.7 or newer.
 
@@ -65,24 +65,25 @@ Edit the file `.env` changing to your S3 Bucket name, file name inside the S3 Bu
 
 > Make sure you have valid credentials to your AWS environment.
 
-To create a new bucket for deployment artifacts, run `python3 automation.py --step 0`.
+To create a new bucket for deployment artifacts, run `python3 automation.py --step 0 --config ./config_file_sample.json`.
 
-    python3 automation.py --step 0
+    python3 automation.py --step 0 --config ./config_file_sample.json
 
 Example output:
 
-    [MainThread] [INFO ]  Starting automation script.
-    [MainThread] [INFO ]  Creating S3 bucket.
-    [MainThread] [INFO ]  Found credentials in environment variables.
-    [MainThread] [INFO ]  Creating S3 bucket - Done.
+    2025-04-11 14:13:58,152 [MainThread] [INFO]  Found credentials in environment variables.
+    2025-04-11 14:13:58,211 [MainThread] [INFO]  Creating S3 bucket: test-us-east-1-ip-block-guardduty, region: us-east-1.
+    2025-04-11 14:13:58,879 [MainThread] [INFO]  Creating S3 bucket - Done.
+    2025-04-11 14:13:58,881 [MainThread] [INFO]  Creating S3 bucket: test-us-east-2-ip-block-guardduty, region: us-east-2.
+    2025-04-11 14:13:59,969 [MainThread] [INFO]  Creating S3 bucket - Done.
 
 It means the S3 bucket got created and a new empty file is already there.
 
 
 ### Automation Deploy
-To deploy the application, run `python3 automation.py --step 1`.
+To deploy the application, run `python3 automation.py --step 1 --config ./config_file_sample.json`.
 
-    python3 automation.py --step 1
+    python3 automation.py --step 1 --config ./config_file_sample.json
     
 This script will:
 - Install Lambda function required packages.
@@ -94,9 +95,8 @@ If the AWS CloudFormation stack that contains the resources already exists, the 
 
 ### VPC EndPoint and S3 Policy Configuration
 
-To create the VPCe, run the command `python3 automation.py --step 2 --vpcId <vpc-id> --subnetId <subnet-id-1> --subnetId <subnet-id-2>  --sgId <sg-id-1> --sgId <sg-id-2>`
+To create the VPCe, run the command `python3 automation.py --step 2 --config ./config_file_sample.json`
 
-Noticed in the case where only one subnet is necessary, just pass the parameter --subnetId a single time, same behavior for --sgId.
 The script will:
 - Create the VPC EndPoint based on the data provider
 - Set the S3 Bucket policy

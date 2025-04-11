@@ -1,20 +1,17 @@
 from argparse import ArgumentParser
 from boto3.s3.transfer import S3Transfer
+from botocore.config import Config
 
-from dataclasses import dataclass
-from dotenv import load_dotenv
-
+import random
+import json
 import logging
 import sys
 import os
 import boto3
 import shutil
-
 import jsonpickle
 
-load_dotenv()
-logFormatter = logging.Formatter(
-    "%(asctime)s [%(threadName)-8.12s] [%(levelname)-4.5s]  %(message)s")
+logFormatter = logging.Formatter("%(asctime)s [%(threadName)-8.12s] [%(levelname)-4.5s]  %(message)s")
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
@@ -23,26 +20,44 @@ consoleHandler.setFormatter(logFormatter)
 logger.addHandler(consoleHandler)
 
 
-@dataclass
+class VPCEndpoint():
+    def __init__(self, vpc_id, subnet_ids, security_group_ids):
+        self.vpc_id: str = vpc_id
+        self.subnet_ids: list[str] = subnet_ids
+        self.security_group_ids: list[str] = security_group_ids
+        self.vpce_id: str = ""
+
+
 class EnvironmentData():
-    s3_bucket_name: str
-    s3_file_name: str
-    aws_region: str
-    prefix: str
+    def __init__(self, s3_bucket_name, s3_file_name, aws_region, prefix, endpoint):
+        self.s3_bucket_name: str = "%s-%s" % (prefix, s3_bucket_name)
+        self.s3_file_name: str = "%s-%s" % (prefix, s3_file_name)
+        self.aws_region: str = aws_region
+        self.prefix: str = prefix
+        self.endpoint: VPCEndpoint = VPCEndpoint(**endpoint)
 
 
-config: EnvironmentData = None
+class SystemConfiguration():
+    def __init__(self, environments):
+        self.environments: list[EnvironmentData] = list()
+        for item in environments:
+            env = EnvironmentData(**item)
+            self.environments.append(env)
 
 
-class S3BucketHelper(object):
+system_config: SystemConfiguration = None
+vpce_urls = []
+
+
+class S3BucketHelper():
 
     def __init__(self):
         self.client = boto3.client("s3")
 
-    def set_bucket_policy(self, vpce_id: str):
+    def set_bucket_policy(self, config: EnvironmentData):
         policy = {
             "Version": "2012-10-17",
-            "Id": "Policy1415115909152",
+            "Id": "Policy14%s" % random.randint(100001, 1000000),
             "Statement": [
                 {
                     "Sid": "Access-to-specific-VPCE-only",
@@ -52,7 +67,7 @@ class S3BucketHelper(object):
                     "Resource": "arn:aws:s3:::%s/*" % config.s3_bucket_name,
                     "Condition": {
                         "StringEquals": {
-                            "aws:sourceVpce": vpce_id
+                            "aws:sourceVpce": config.endpoint.vpce_id
                         }
                     }
                 }
@@ -63,16 +78,20 @@ class S3BucketHelper(object):
             Bucket=config.s3_bucket_name, Policy=jsonpickle.encode(policy))
         logger.info("Adding policy to S3 bucket")
 
-    def create_s3_bucket(self):
-        logger.info("Creating S3 bucket.")
-        if config.aws_region != "us-east-1":
-            self.client.create_bucket(
-                Bucket=config.s3_bucket_name,
-                CreateBucketConfiguration={
-                    'LocationConstraint': config.aws_region}
-            )
-        else:
-            self.client.create_bucket(Bucket=config.s3_bucket_name)
+    def create_s3_bucket(self, config: EnvironmentData):
+        logger.info("Creating S3 bucket: %s, region: %s." % (config.s3_bucket_name, config.aws_region))
+        try:
+            if config.aws_region != "us-east-1":
+                self.client.create_bucket(
+                    Bucket=config.s3_bucket_name,
+                    CreateBucketConfiguration={
+                        'LocationConstraint': config.aws_region}
+                )
+            else:
+                self.client.create_bucket(Bucket=config.s3_bucket_name)
+
+        except  self.client.exceptions.BucketAlreadyOwnedByYou as err:
+            logger.error(err)
 
         open('tmp_file', 'a').close()
         transfer = S3Transfer(boto3.client('s3', config.aws_region))
@@ -81,7 +100,7 @@ class S3BucketHelper(object):
         os.remove('tmp_file')
         logger.info("Creating S3 bucket - Done.")
 
-    def delete_s3_bucket(self):
+    def delete_s3_bucket(self, config: EnvironmentData):
         logger.info("Deleting S3 bucket.")
 
         client = boto3.client('s3', config.aws_region)
@@ -89,8 +108,8 @@ class S3BucketHelper(object):
 
         s3_bucket_exist = next(
             (x for x in response['Buckets'] if x['Name'] == config.s3_bucket_name), None)
-        if (s3_bucket_exist):
 
+        if (s3_bucket_exist):
             response = client.list_objects_v2(
                 Bucket=config.s3_bucket_name, Prefix="")
             if 'Contents' in response:
@@ -134,7 +153,7 @@ class CloudFormationHelper(object):
         if os.path.exists(self.template_out_file):
             os.remove(self.template_out_file)
 
-    def create_package(self):
+    def create_package(self, config: EnvironmentData):
         logger.info("Starting package process")
         command = "aws cloudformation package --template-file %s --s3-bucket %s --output-template-file %s --region %s"
         full_command = command % (
@@ -143,7 +162,7 @@ class CloudFormationHelper(object):
         os.system(full_command)
         logger.info("Done - Starting package process")
 
-    def create_stack(self):
+    def create_stack(self, config: EnvironmentData):
         logger.info("Starting stack creation process")
         stack_name = "%s-FortiGate-GuardGuty-Finding-Security" % config.prefix
         command = "aws cloudformation deploy --template-file %s --stack-name %s --capabilities CAPABILITY_NAMED_IAM --parameter-overrides BucketFileName=%s BucketName=%s Prefix=%s --region %s"
@@ -156,7 +175,7 @@ class CloudFormationHelper(object):
         if os.path.exists(self.template_out_file):
             os.remove(self.template_out_file)
 
-    def delete_stack(self):
+    def delete_stack(self, config: EnvironmentData):
         logger.info("Starting stack deletion process")
         stack_name = "%s-FortiGate-GuardGuty-Finding-Security" % config.prefix
 
@@ -167,15 +186,15 @@ class CloudFormationHelper(object):
 
 
 class EC2Helper(object):
-    def __init__(self):
-        self.client = boto3.client("ec2")
 
-    def create_vpce_s3(self, vpc_id, subnet_ids, security_group_ids):
+    def create_vpce_s3(self, config: EnvironmentData):
+        boto_client_config = Config(region_name=config.aws_region)
+        self.client = boto3.client("ec2", config=boto_client_config)
         response = self.client.create_vpc_endpoint(
-            VpcId=vpc_id,
+            VpcId=config.endpoint.vpc_id,
             ServiceName='com.amazonaws.%s.s3' % config.aws_region,  # S3 service name
-            SubnetIds=subnet_ids,
-            SecurityGroupIds=security_group_ids,
+            SubnetIds=config.endpoint.subnet_ids,
+            SecurityGroupIds=config.endpoint.security_group_ids,
             # PolicyDocument=policy_document, # Optional: Add a policy
             TagSpecifications=[
                 {
@@ -189,86 +208,99 @@ class EC2Helper(object):
             ],
             DryRun=False,  # Set to True for a dry run
             PrivateDnsEnabled=True,
-            DnsOptions= { "PrivateDnsOnlyForInboundResolverEndpoint": False, "DnsRecordIpType": "ipv4"},
+            DnsOptions={
+                "PrivateDnsOnlyForInboundResolverEndpoint": False, "DnsRecordIpType": "ipv4"},
             VpcEndpointType='Interface'
         )
-        
+
         # response = {'VpcEndpoint': {'VpcEndpointId': 'vpce-0aa88dfb8a072bb5b', 'VpcEndpointType': 'Interface', "DnsEntries": [{"DnsName": "*.vpce-0aa88dfb8a072bb5b-l0shckhq.s3.us-east-1.vpce.amazonaws.com","HostedZoneId": "Z7HUB22UULQXV"}]}}
         logger.debug(response)
 
-        vpce_id = None
         if ('VpcEndpoint' in response):
             if ('VpcEndpointId' in response["VpcEndpoint"]):
-                vpce_id = response["VpcEndpoint"]["VpcEndpointId"]
+                config.endpoint.vpce_id = response["VpcEndpoint"]["VpcEndpointId"]
                 s3Helper = S3BucketHelper()
-                s3Helper.set_bucket_policy(vpce_id)
+                s3Helper.set_bucket_policy(config)
 
                 for item in response["VpcEndpoint"]["DnsEntries"]:
-                    if item["DnsName"].find(vpce_id) > 0:
-                        logger.info("HTTP URL File:  https://bucket.%s/%s/%s" % (item["DnsName"][2:], config.s3_bucket_name, config.s3_file_name))
-                
+                    if item["DnsName"].find(config.endpoint.vpce_id) > 0:
+                        url = "HTTP URL File:  https://bucket.%s/%s/%s" % (item["DnsName"][2:], config.s3_bucket_name, config.s3_file_name)
+                        vpce_urls.append(url)
+                        return
+
+    def delete_vpce_s3(self, config: EnvironmentData):
+        boto_client_config = Config(region_name=config.aws_region)
+        self.client = boto3.client("ec2", config=boto_client_config)
+
+
 class Main(object):
 
     def bootstrap(self, args):
 
-        logger.info('## EVENT: ' + jsonpickle.encode(config))
+        logger.info('## CONFIG_FILE: ' + jsonpickle.encode(system_config))
 
         if (args.step_id == 0):
-            helper = S3BucketHelper()
-            helper.create_s3_bucket()
+            s3_client = S3BucketHelper()
+            for item in system_config.environments:
+                s3_client.create_s3_bucket(item)
+
         elif (args.step_id == 1):
             helper = PipHelper()
             helper.create_package_folder()
 
             helper2 = CloudFormationHelper()
-            helper2.create_package()
-            helper2.create_stack()
+            for item in system_config.environments:
+                helper2.create_package(item)
+                helper2.create_stack(item)
+
         elif (args.step_id == 2):
+
             helpEC2 = EC2Helper()
-            helpEC2.create_vpce_s3(args.vpc_id, args.subnet_ids, args.sg_ids)
+            for item in system_config.environments:
+                helpEC2.create_vpce_s3(item)
+
+            logger.info("#######################################################")
+            logger.info("################### VPC Enpoint URLs ##################")
+            for item in vpce_urls:
+                logger.info(item)
+            logger.info("#######################################################")
+            logger.info("#######################################################")
+
         elif (args.step_id == 3):
-            helper = S3BucketHelper()
-            helper.delete_s3_bucket()
+
+            s3_client = S3BucketHelper()
+            for item in system_config.environments:
+                s3_client.delete_s3_bucket(item)
 
             helper2 = PipHelper()
             helper2.delete_package_folder()
 
             helper3 = CloudFormationHelper()
-            helper3.delete_stack()
+            for item in system_config.environments:
+                helper3.delete_stack(item)
         else:
             logger.error("Option not available.")
             pass
 
 
 if __name__ == "__main__":
-    logger.info("Starting automation script.")
+    logger.debug("Starting automation script.")
 
     main_parser = ArgumentParser(
-        description='Fortinet Cloud Solutions Team - GuardDuty Security Monitor', usage="python3 automation.py --step <Step ID>")
+        description='Fortinet Cloud Solutions Team - GuardDuty Security Monitor', usage="python3 automation.py --step <Step ID> --config <config file path>")
     main_parser.add_argument('--step', dest="step_id", type=int, required=True,
                              help="Which automation step to execute: 0 - for Create S3 Resource, 1 - For Deploy, 2 - For create the VPC Endpoint for EC2 private access.")
-    main_parser.add_argument('--vpcId', dest="vpc_id", type=str,
-                             required=False, help="VPC ID for the VPC Endpoint resource.")
-    main_parser.add_argument('--subnetId', dest="subnet_ids", type=str, action="append",
-                             required=False, help="List of subnet ids for the VPC Endpoint resource.")
-    main_parser.add_argument('--sgId', dest="sg_ids", type=str, action="append",
-                             required=False, help="List of securiry groups ids for the VPC Endpoint resource.")
-
+    main_parser.add_argument('--config', dest="config_file", type=str, required=True,
+                             help="Configuration file.")
     main_args = main_parser.parse_args()
 
-    region = os.environ.get("AWS_REGION")
-    prefix = os.environ.get("PREFIX")
-    bucket_name = os.environ.get("S3_BUCKET_NAME")
-    file_name = os.environ.get("S3_BLOCKLIST_KEY_FILE")
-
-    config = EnvironmentData(
-        aws_region=region,
-        prefix=prefix,
-        s3_bucket_name="%s-%s" % (prefix, bucket_name),
-        s3_file_name="%s-%s" % (prefix, file_name)
-    )
-
     try:
+        with open(main_args.config_file, 'r') as fr:
+            json_value = json.load(fr)
+            system_config = SystemConfiguration(**json_value)
+
+            logger.info(system_config)
+
         main = Main()
         main.bootstrap(main_args)
     except Exception as ex:
