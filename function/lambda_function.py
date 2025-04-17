@@ -1,3 +1,18 @@
+"""
+lambda_function.py
+
+:platform: Ihis module is compatible AWS Lambda, and can be emulate using the file lamdba_function.test.py
+:synopsis: Configure GuardDuty Findings to the FortiGate Threat Feed - Lambda Function runtime code
+:moduleauthor: Rene Sobral <rsobral@fortinet.com>
+"""
+__author__ = "Cloud Consulting Services"
+__copyright__ = "Copyright 2025, Fortinet Inc."
+__license__ = "MIT"
+__version__ = "1.0.0"
+__maintainer__ = "Cloud Consulting Services"
+__email__ = "consulting@fortinet.com "
+__status__ = "Production"
+
 from dataclasses import dataclass
 import os
 import logging

@@ -1,3 +1,18 @@
+"""
+automation.py
+:platform: Ihis module is compatible with Windows, Linux, and macOS
+:synopsis: Configure GuardDuty Findings to the FortiGate Threat Feed
+:moduleauthor: Rene Sobral <rsobral@fortinet.com>
+"""
+__author__ = "Cloud Consulting Services"
+__copyright__ = "Copyright 2025, Fortinet Inc."
+__license__ = "MIT"
+__version__ = "1.0.0"
+__maintainer__ = "Cloud Consulting Services"
+__email__ = "consulting@fortinet.com "
+__status__ = "Production"
+
+
 from argparse import ArgumentParser
 from boto3.s3.transfer import S3Transfer
 from botocore.config import Config
