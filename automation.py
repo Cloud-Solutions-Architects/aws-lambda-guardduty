@@ -194,7 +194,7 @@ class CloudFormationHelper(object):
         logger.info("Starting stack deletion process")
         stack_name = "%s-FortiGate-GuardGuty-Finding-Security" % config.prefix
 
-        command = "aws cloudformation delete-stack --stack-name %s" % stack_name
+        command = "aws cloudformation delete-stack --stack-name %s --reigion" % (stack_name, config.aws_region)
         logger.info("## Commnand: " + command)
         os.system(command)
         logger.info("Starting stack deletion process - Done")
